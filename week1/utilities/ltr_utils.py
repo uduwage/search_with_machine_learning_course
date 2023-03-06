@@ -18,12 +18,15 @@ def create_rescore_ltr_query(user_query: str, query_obj, click_prior_query: str,
             "sltr": {
                 "params": {
                     "keywords": user_query,
+                    "click_prior_query": click_prior_query,
                 },
                 "model": ltr_model_name,
                 "store": ltr_store_name,
             }
         },
-        "rescore_query_weight": rescore_query_weight # Magic number, but let's say LTR matches are 2x baseline matches
+        "score_mode": "total",
+        "query_weight": main_query_weight,
+        "rescore_query_weight": rescore_query_weight, # Magic number, but let's say LTR matches are 2x baseline matches
     }
 }
     if active_features is not None and len(active_features) > 0:
@@ -88,7 +91,8 @@ def create_feature_log_query(query, doc_ids, click_prior_query, featureset_name,
                             "featureset": featureset_name,
                             "store": ltr_store_name,
                             "params": {
-                                "keywords": query
+                                "keywords": query,
+                                "click_prior_query": click_prior_query,
                             }
                         }
                     }
