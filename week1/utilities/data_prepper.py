@@ -249,9 +249,7 @@ class DataPrepper:
         feature_results["doc_id"] = []  # capture the doc id so we can join later
         feature_results["query_id"] = []  # ^^^
         feature_results["sku"] = []
-        #feature_results["name_match"] = []
                
-        #rng = np.random.default_rng(12345)
         for doc_id in query_doc_ids:
             feature_results["doc_id"].append(doc_id)  # capture the doc id so we can join later
             feature_results["query_id"].append(query_id)
@@ -260,8 +258,6 @@ class DataPrepper:
         if features is not None:
             for feature in features:
                 feature_results[feature.get('name')] = feature.get('value', 0)
-                import pdb
-                pdb.set_trace()
 
         frame = pd.DataFrame(feature_results)
         return frame.astype({'doc_id': 'int64', 'query_id': 'int64', 'sku': 'int64'})

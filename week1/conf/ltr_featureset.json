@@ -37,7 +37,7 @@
                 {
                   "field_value_factor": {
                       "field": "customerReviewCount",
-                      "missing": 3
+                      "missing": 0
                   }
                 }
               ],
@@ -101,7 +101,7 @@
               "functions": [{
                   "field_value_factor": {
                       "field": "customerReviewAverage",
-                      "missing": 0
+                      "missing": 2
                   }
               }],
               "query": {
