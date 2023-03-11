@@ -239,28 +239,36 @@ class DataPrepper:
         #print("IMPLEMENT ME: __log_ltr_query_features: Extract log features out of the LTR:EXT response and place in a data frame")
         # Loop over the hits structure returned by running `log_query` and then extract out the features from the response per query_id and doc id.  Also capture and return all query/doc pairs that didn't return features
         # Your structure should look like the data frame below
-        response = self.opensearch.search(body = log_query, index= self.index_name)
-        features = None
-        if response and response['hits']["hits"] and len(response['hits']['hits']) > 0:
-            hits = response['hits']['hits']
-            features = hits[0]['fields']['_ltrlog'][0]['log_entry']
+        try:
+            response = self.opensearch.search(body = log_query, index= self.index_name)
+        except RequestError as re:
+            print("Error logging features", re, log_query)
+        else:
+            if response and response['hits']["hits"] and len(response['hits']['hits']) > 0:
+                hits = response['hits']['hits']
+                #features = hits[0]['fields']['_ltrlog'][0]['log_entry']
 
-        feature_results = {}
-        feature_results["doc_id"] = []  # capture the doc id so we can join later
-        feature_results["query_id"] = []  # ^^^
-        feature_results["sku"] = []
-               
-        for doc_id in query_doc_ids:
-            feature_results["doc_id"].append(doc_id)  # capture the doc id so we can join later
-            feature_results["query_id"].append(query_id)
-            feature_results["sku"].append(doc_id)
-            
-        if features is not None:
-            for feature in features:
-                feature_results[feature.get('name')] = feature.get('value', 0)
+                feature_results = {}
+                feature_results["doc_id"] = []  # capture the doc id so we can join later
+                feature_results["query_id"] = []  # ^^^
+                feature_results["sku"] = []
+                feature_results["name_match"] = []
+                    
+                for (idx, hit) in enumerate(hits):
+                    feature_results["doc_id"].append(hit["_id"])  # capture the doc id so we can join later
+                    feature_results["query_id"].append(int(query_id))
+                    feature_results["sku"].append(hit['_source']['sku'][0])
 
-        frame = pd.DataFrame(feature_results)
-        return frame.astype({'doc_id': 'int64', 'query_id': 'int64', 'sku': 'int64'})
+                    features = hits[0]['fields']['_ltrlog'][0]['log_entry']
+                    if features is not None:
+                        for feature in features:
+                            feature_results[feature.get('name')] = feature.get('value', 0)
+
+                frame = pd.DataFrame(feature_results)
+                return frame.astype({'doc_id': 'int64', 'query_id': 'int64', 'sku': 'int64'})
+            else:
+                no_results[key] = query_doc_ids
+        return None  
         # IMPLEMENT_END
 
     # Can try out normalizing data, but for XGb, you really don't have to since it is just finding splits
